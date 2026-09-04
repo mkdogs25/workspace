@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Preview — Workspace</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">🗂️ Workspace</a>
+      <div class="topnav-links">
+        <a href="index.html" class="topnav-link" data-nav="dashboard">🏠 <span class="label">Dashboard</span></a>
+        <a href="notes.html" class="topnav-link" data-nav="notes">🗒️ <span class="label">Notes</span></a>
+        <a href="tasks.html" class="topnav-link" data-nav="tasks">📋 <span class="label">Tasks</span></a>
+        <a href="preview.html" class="topnav-link" data-nav="preview">📄 <span class="label">Files</span></a>
+        <a href="settings.html" class="topnav-link" data-nav="settings">⚙️ <span class="label">Settings</span></a>
+      </div>
+      <div class="topnav-actions">
+        <button class="topnav-timer-badge" id="timerBadge"></button>
+        <button class="topnav-icon-btn" onclick="openCommandPalette()" title="Command palette (Ctrl/Cmd+P)">🔍</button>
+        <button class="topnav-icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">File Preview</div>
+        <div class="page-subtitle">Drop in a markdown, text, PDF, image, or code file to preview it — nothing is uploaded, it all stays local.</div>
+      </div>
+      <div class="page-header-actions" id="previewControls" style="display: none;">
+        <button class="btn-icon" id="fullscreenBtn" onclick="toggleFileFullscreen()">⛶ Fullscreen</button>
+        <button class="btn-icon btn-icon-close" onclick="closePreview()">✕ Close</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <span class="drop-icon">📁</span>
+        <p id="dropText">Click to choose a file, or drag &amp; drop it here — .md, .txt, code, PDF, or images</p>
+        <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+      </div>
+      <div class="viewer-area" id="viewerArea">
+        <div id="viewerContent" class="exam-style"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="modal-overlay" id="paletteModal" style="align-items: flex-start; padding-top: 12vh;">
+    <div class="modal-card palette-modal-card">
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Type a note name or command..." oninput="filterPalette()">
+      <div class="palette-list" id="paletteList"></div>
+      <div class="palette-hint">↑↓ to navigate · Enter to select · Esc to close</div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/preview.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Workspace</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">🗂️ Workspace</a>
+      <div class="topnav-links">
+        <a href="index.html" class="topnav-link" data-nav="dashboard">🏠 <span class="label">Dashboard</span></a>
+        <a href="notes.html" class="topnav-link" data-nav="notes">🗒️ <span class="label">Notes</span></a>
+        <a href="tasks.html" class="topnav-link" data-nav="tasks">📋 <span class="label">Tasks</span></a>
+        <a href="preview.html" class="topnav-link" data-nav="preview">📄 <span class="label">Files</span></a>
+        <a href="settings.html" class="topnav-link" data-nav="settings">⚙️ <span class="label">Settings</span></a>
+      </div>
+      <div class="topnav-actions">
+        <button class="topnav-timer-badge" id="timerBadge"></button>
+        <button class="topnav-icon-btn" onclick="openCommandPalette()" title="Command palette (Ctrl/Cmd+P)">🔍</button>
+        <button class="topnav-icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Settings</div>
+        <div class="page-subtitle">Folder sync, quick-launch apps, appearance, sound, and dashboard layout.</div>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- Directory Sync -->
+      <div class="card">
+        <h2><span class="card-title">📂 Directory Sync</span></h2>
+        <div class="sync-status" id="fileSyncStatus">⚠️ No project folder linked. Notes & data are saving to browser cache.</div>
+        <button class="btn btn-light" onclick="selectProjectDirectory()">📂 Select / Change Project Folder</button>
+        <span class="field-hint">Every note is saved as its own <code>.md</code> file, plus a <code>data.json</code> for everything else — readable and editable outside this app too.</span>
+      </div>
+
+      <!-- Appearance -->
+      <div class="card">
+        <h2><span class="card-title">🎨 Appearance</span></h2>
+        <div class="settings-section">
+          <label class="section-label">Accent Color</label>
+          <div class="flex-row">
+            <input type="color" id="accentPicker" style="width: 34px; height: 34px; border: none; background: transparent; cursor: pointer;" value="#B13F2B" onchange="updateAccentColor(this.value)">
+            <span class="field-hint">Used across buttons, links, and highlights.</span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <label class="section-label">Theme</label>
+          <button class="btn-icon" onclick="toggleTheme()">Toggle Light / Dark</button>
+        </div>
+        <div class="settings-section">
+          <label class="section-label">Google Font</label>
+          <div class="flex-row">
+            <input type="text" id="googleFontInput" class="text-input" placeholder="e.g. Inter, Lora, JetBrains Mono">
+            <button class="btn btn-auto" onclick="applyGoogleFontFromInput()">Apply</button>
+          </div>
+          <span class="field-hint" id="currentFontLabel">Default: Charter (serif)</span>
+        </div>
+        <div class="settings-section">
+          <label class="section-label">Custom CSS</label>
+          <textarea id="customCssInput" class="textarea-mono" style="height: 100px;" placeholder="/* your custom CSS overrides */" oninput="saveCustomCss()"></textarea>
+        </div>
+      </div>
+
+      <!-- Timer & Alarm -->
+      <div class="card">
+        <h2><span class="card-title">⏱️ Timer & Alarm</span></h2>
+        <div class="settings-section">
+          <label class="section-label">Completion Sound</label>
+          <select id="alarmSoundSelect" class="select-input" onchange="saveAlarmSound()">
+            <option value="chime">Chime (default)</option>
+            <option value="bell">Soft Bell</option>
+            <option value="beep">Digital Beep</option>
+            <option value="silent">Mute</option>
+          </select>
+        </div>
+        <div class="settings-section">
+          <label class="section-label">Custom Alarm Upload</label>
+          <input type="file" accept="audio/*" id="customAlarmUpload" class="text-input" onchange="handleCustomAlarmUpload(event)">
+          <span class="field-hint" id="customAlarmStatus">No custom sound uploaded.</span>
+        </div>
+        <div class="settings-section">
+          <label class="section-label">Desktop Notifications</label>
+          <button class="btn-icon" id="notifPermissionBtn" onclick="onEnableNotificationsClick()">🔔 Enable Desktop Notifications</button>
+          <span class="field-hint">Only asked once, and only when you click this — needed for due-task and timer-complete alerts.</span>
+        </div>
+      </div>
+
+      <!-- Ambient Sound Mixer -->
+      <div class="card">
+        <h2><span class="card-title">🎧 Ambient Sound Mixer</span></h2>
+        <div class="settings-item">
+          <span class="item-label">🌧️ Rain</span>
+          <div class="flex-row">
+            <input type="range" min="0" max="1" step="0.01" value="0.3" oninput="setSoundVolume('rain', this.value)">
+            <button class="btn-icon" id="soundBtn-rain" onclick="toggleAmbientSound('rain')">▶ Play</button>
+          </div>
+        </div>
+        <div class="settings-item">
+          <span class="item-label">⚪ White Noise</span>
+          <div class="flex-row">
+            <input type="range" min="0" max="1" step="0.01" value="0.3" oninput="setSoundVolume('white', this.value)">
+            <button class="btn-icon" id="soundBtn-white" onclick="toggleAmbientSound('white')">▶ Play</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Manager -->
+      <div class="card card-wide" id="apps">
+        <h2><span class="card-title">🚀 Quick-Launch Apps</span></h2>
+
+        <div class="settings-section">
+          <label class="section-label">Add New App / URL</label>
+          <div class="flex-row">
+            <input type="text" id="modalIcon" class="text-input" placeholder="🔗" style="max-width: 60px; text-align: center;">
+            <input type="text" id="modalTitle" class="text-input" placeholder="App Title (e.g. Notion)">
+            <input type="text" id="modalUrl" class="text-input" placeholder="URL or URI Scheme (e.g. https://notion.so)">
+            <button class="btn btn-auto" onclick="addAppFromModal()">Add</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-label">Registered Apps</label>
+          <div class="app-grid-list" id="modalAppsList"></div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-label">Create Custom Suite Preset</label>
+          <div class="flex-row">
+            <input type="text" id="suiteNameInput" class="text-input" placeholder="Suite Name (e.g. Research Suite)">
+            <button class="btn btn-auto" onclick="saveCustomSuiteFromSettings()">Save Checked Apps</button>
+          </div>
+          <span class="field-hint">Saves whichever apps are currently checked on your Dashboard launcher as a one-click suite button.</span>
+        </div>
+      </div>
+
+      <!-- Dashboard Layout -->
+      <div class="card">
+        <h2><span class="card-title">🧩 Dashboard Layout</span></h2>
+        <span class="field-hint">Panel visibility, column count, and reordering now live right on the Dashboard — click the ✏️ button in its bottom-right corner to edit the layout in place.</span>
+        <a class="btn btn-ghost" href="index.html">🏠 Go to Dashboard</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="modal-overlay" id="paletteModal" style="align-items: flex-start; padding-top: 12vh;">
+    <div class="modal-card palette-modal-card">
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Type a note name or command..." oninput="filterPalette()">
+      <div class="palette-list" id="paletteList"></div>
+      <div class="palette-hint">↑↓ to navigate · Enter to select · Esc to close</div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

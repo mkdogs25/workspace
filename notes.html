@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes — Workspace</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">🗂️ Workspace</a>
+      <div class="topnav-links">
+        <a href="index.html" class="topnav-link" data-nav="dashboard">🏠 <span class="label">Dashboard</span></a>
+        <a href="notes.html" class="topnav-link" data-nav="notes">🗒️ <span class="label">Notes</span></a>
+        <a href="tasks.html" class="topnav-link" data-nav="tasks">📋 <span class="label">Tasks</span></a>
+        <a href="preview.html" class="topnav-link" data-nav="preview">📄 <span class="label">Files</span></a>
+        <a href="settings.html" class="topnav-link" data-nav="settings">⚙️ <span class="label">Settings</span></a>
+      </div>
+      <div class="topnav-actions">
+        <button class="topnav-timer-badge" id="timerBadge"></button>
+        <button class="topnav-icon-btn" onclick="openCommandPalette()" title="Command palette (Ctrl/Cmd+P)">🔍</button>
+        <button class="topnav-icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page" id="notesPage">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Notes</div>
+        <div class="page-subtitle">Live preview by default, just like Obsidian — switch to Source to write raw markdown, or Reading for a clean read-only view.</div>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn-icon" onclick="quickNewNoteGlobal()">+ New Note</button>
+        <button class="btn-icon" onclick="openDailyNoteGlobal()">📅 Daily Note</button>
+        <button class="btn-icon" onclick="document.getElementById('importMdInput').click()">⬆️ Import Markdown</button>
+        <input type="file" id="importMdInput" accept=".md,text/markdown" multiple style="display: none;" onchange="handleImportMarkdown(event)">
+        <button class="btn-icon" onclick="toggleGraphModal(true)">🕸️ Graph</button>
+      </div>
+    </div>
+
+    <div class="notes-shell">
+      <div class="notes-sidebar">
+        <input type="text" id="noteSearchInput" class="text-input" placeholder="🔍 Fuzzy search notes..." oninput="renderNotesSwitcherList()" style="font-size: 0.85rem; padding: 8px 10px;">
+        <div class="tag-chips" id="tagChipsContainer"></div>
+        <div class="note-switcher-list" id="noteSwitcherList"></div>
+      </div>
+
+      <div class="notes-main">
+        <div class="notes-toolbar">
+          <span id="noteTitleDisplay" style="font-size: 1.3rem; font-weight: 700; flex: 1; min-width: 140px;">No note selected</span>
+          <div class="notes-mode-tabs">
+            <button class="notes-mode-tab" data-mode="source" onclick="setNotesMode('source')">🔤 Source</button>
+            <button class="notes-mode-tab active" data-mode="live" onclick="setNotesMode('live')">✍️ Live Preview</button>
+            <button class="notes-mode-tab" data-mode="reading" onclick="setNotesMode('reading')">📖 Reading</button>
+          </div>
+          <div class="header-controls notes-toolbar-secondary">
+            <button class="btn-icon" onclick="popoutNotes()">📌 Popout</button>
+            <button class="btn-icon btn-icon-close" onclick="confirmDeleteActiveNote()">🗑 Delete</button>
+          </div>
+        </div>
+
+        <div style="position: relative;">
+          <textarea id="noteEditorTextarea" class="textarea-mono note-editor-textarea" style="display: none;" placeholder="Select or create a note. Type [[ to link another note..." oninput="handleNoteEditorInput()" onkeyup="checkWikiLinkAutosuggest()" onclick="checkWikiLinkAutosuggest()"></textarea>
+
+          <div id="lpContainer" class="lp-container exam-style" style="display: block;"></div>
+
+          <div class="wikilink-suggest-box" id="wikilinkSuggestBox" style="display: none;"></div>
+        </div>
+
+        <div id="notePreviewWrapper" style="display: none;">
+          <div id="notePreviewContent" class="exam-style"></div>
+        </div>
+
+        <div class="linked-references notes-toolbar-secondary">
+          <div class="section-label">🔗 Linked References</div>
+          <div id="linkedReferences" class="backlinks-list mt-8"><em>No note selected.</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graph View Modal -->
+  <div class="modal-overlay" id="graphModal">
+    <div class="modal-card modal-card-wide">
+      <h2>
+        <span>🕸️ Note Graph</span>
+        <button class="btn-icon btn-icon-close" onclick="toggleGraphModal(false)">✕</button>
+      </h2>
+      <svg id="graphSvg" viewBox="0 0 700 500" style="width: 100%; height: 500px;"></svg>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="modal-overlay" id="paletteModal" style="align-items: flex-start; padding-top: 12vh;">
+    <div class="modal-card palette-modal-card">
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Type a note name or command..." oninput="filterPalette()">
+      <div class="palette-list" id="paletteList"></div>
+      <div class="palette-hint">↑↓ to navigate · Enter to select · Esc to close</div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/notes.js"></script>
+</body>
+</html>

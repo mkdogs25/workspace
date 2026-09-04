@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Workspace</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">🗂️ Workspace</a>
+      <div class="topnav-links">
+        <a href="index.html" class="topnav-link" data-nav="dashboard">🏠 <span class="label">Dashboard</span></a>
+        <a href="notes.html" class="topnav-link" data-nav="notes">🗒️ <span class="label">Notes</span></a>
+        <a href="tasks.html" class="topnav-link" data-nav="tasks">📋 <span class="label">Tasks</span></a>
+        <a href="preview.html" class="topnav-link" data-nav="preview">📄 <span class="label">Files</span></a>
+        <a href="settings.html" class="topnav-link" data-nav="settings">⚙️ <span class="label">Settings</span></a>
+      </div>
+      <div class="topnav-actions">
+        <button class="topnav-timer-badge" id="timerBadge"></button>
+        <button class="topnav-icon-btn" onclick="openCommandPalette()" title="Command palette (Ctrl/Cmd+P)">🔍</button>
+        <button class="topnav-icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Your home base — launch tools, run a focus session, and see what's next.</div>
+      </div>
+      <div class="page-header-actions">
+        <div class="accent-picker-wrapper flex-row">
+          <span class="text-muted" style="font-size:0.8rem;">Accent</span>
+          <input type="color" id="accentPicker" style="width:26px;height:26px;border:none;background:transparent;cursor:pointer;" value="#B13F2B" onchange="updateAccentColor(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="gap: 8px;">
+      <label for="activeFile" class="section-label">📁 Active Project / File Name</label>
+      <input type="text" id="activeFile" class="text-input" placeholder="e.g., Chapter 4 Draft, Kinematics Problem Set, or main.py...">
+    </div>
+
+    <div id="mainGrid" class="widget-grid">
+      <!-- Quick-Launch Apps -->
+      <div class="card" data-widget-id="launcher" ondragover="onWidgetDragOver(event)" ondrop="onWidgetDrop(event,'launcher')">
+        <div class="widget-edit-overlay">
+          <button class="btn-icon" onclick="toggleWidgetWide('launcher')" title="Toggle wide">⬍</button>
+          <button class="btn-icon btn-icon-close" onclick="toggleWidgetHidden('launcher')" title="Remove">✕</button>
+        </div>
+        <h2>
+          <span class="card-title"><span class="drag-handle" draggable="true" ondragstart="onWidgetDragStart(event,'launcher')">⋮⋮</span>🚀 Quick-Launch Apps</span>
+          <div class="header-controls">
+            <a class="btn-icon" href="settings.html#apps">+ Manage</a>
+          </div>
+        </h2>
+        <input type="text" id="appSearchInput" class="text-input" placeholder="🔍 Search apps..." oninput="renderChecklist()" style="font-size: 0.85rem; padding: 7px 10px;">
+        <div class="checklist" id="checklistContainer"></div>
+        <button class="btn" onclick="launchSelected()">Launch Selected</button>
+        <div class="header-controls" id="presetButtonsContainer" style="width:100%;"></div>
+      </div>
+
+      <!-- Focus Timer -->
+      <div class="card" style="justify-content: space-between;" data-widget-id="timer" ondragover="onWidgetDragOver(event)" ondrop="onWidgetDrop(event,'timer')">
+        <div class="widget-edit-overlay">
+          <button class="btn-icon" onclick="toggleWidgetWide('timer')" title="Toggle wide">⬍</button>
+          <button class="btn-icon btn-icon-close" onclick="toggleWidgetHidden('timer')" title="Remove">✕</button>
+        </div>
+        <h2>
+          <span class="card-title"><span class="drag-handle" draggable="true" ondragstart="onWidgetDragStart(event,'timer')">⋮⋮</span>⏱️ Focus Timer</span>
+          <div class="header-controls">
+            <button class="btn-icon" onclick="popoutTimer()">📌 Pop Out</button>
+          </div>
+        </h2>
+
+        <div class="timer-display">
+          <input type="number" id="hrsSlot" class="time-slot" value="00" min="0" max="99" onchange="onTimerInputsChanged()">
+          <span class="timer-colon">:</span>
+          <input type="number" id="minsSlot" class="time-slot" value="25" min="0" max="59" onchange="onTimerInputsChanged()">
+          <span class="timer-colon">:</span>
+          <input type="number" id="secsSlot" class="time-slot" value="00" min="0" max="59" onchange="onTimerInputsChanged()">
+        </div>
+
+        <div class="preset-group">
+          <button class="btn-preset" onclick="timerSetSeconds(15*60)">15m</button>
+          <button class="btn-preset" onclick="timerSetSeconds(25*60)">25m</button>
+          <button class="btn-preset" onclick="timerSetSeconds(50*60)">50m</button>
+          <button class="btn-preset" onclick="timerSetSeconds(60*60)">1h</button>
+        </div>
+
+        <div class="timer-controls">
+          <button class="btn" id="startBtn" onclick="timerStart()">Start</button>
+          <button class="btn btn-light" onclick="timerPause()">Pause</button>
+          <button class="btn btn-ghost" style="flex: 0.8;" onclick="timerReset()">Reset</button>
+        </div>
+
+        <div class="stats-badge" id="statsDisplay">Today: 0 sessions completed (0 mins)</div>
+        <div class="history-log" id="sessionHistoryLog"><div><em>No completed sessions yet today.</em></div></div>
+      </div>
+
+      <!-- Today's Tasks -->
+      <div class="card" data-widget-id="todaytasks" ondragover="onWidgetDragOver(event)" ondrop="onWidgetDrop(event,'todaytasks')">
+        <div class="widget-edit-overlay">
+          <button class="btn-icon" onclick="toggleWidgetWide('todaytasks')" title="Toggle wide">⬍</button>
+          <button class="btn-icon btn-icon-close" onclick="toggleWidgetHidden('todaytasks')" title="Remove">✕</button>
+        </div>
+        <h2>
+          <span class="card-title"><span class="drag-handle" draggable="true" ondragstart="onWidgetDragStart(event,'todaytasks')">⋮⋮</span>✅ Today's Tasks</span>
+          <div class="header-controls">
+            <a class="btn-icon" href="tasks.html">Open Tasks →</a>
+          </div>
+        </h2>
+        <div class="mini-list" id="todayTasksList"></div>
+      </div>
+
+      <!-- Recent Notes -->
+      <div class="card" data-widget-id="recentnotes" ondragover="onWidgetDragOver(event)" ondrop="onWidgetDrop(event,'recentnotes')">
+        <div class="widget-edit-overlay">
+          <button class="btn-icon" onclick="toggleWidgetWide('recentnotes')" title="Toggle wide">⬍</button>
+          <button class="btn-icon btn-icon-close" onclick="toggleWidgetHidden('recentnotes')" title="Remove">✕</button>
+        </div>
+        <h2>
+          <span class="card-title"><span class="drag-handle" draggable="true" ondragstart="onWidgetDragStart(event,'recentnotes')">⋮⋮</span>🗒️ Recent Notes</span>
+          <div class="header-controls">
+            <a class="btn-icon" href="notes.html">Open Notes →</a>
+          </div>
+        </h2>
+        <div class="mini-list" id="recentNotesList"></div>
+        <div class="stat-row" id="dashboardStatTiles"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Layout FAB -->
+  <button class="dash-edit-fab" id="dashEditFab" onclick="toggleDashEditMode()" title="Edit dashboard layout">✏️</button>
+  <div class="dash-edit-panel" id="dashEditPanel">
+    <div>
+      <label class="section-label">Columns</label>
+      <div class="dash-col-btns" id="dashColButtons"></div>
+    </div>
+    <div>
+      <label class="section-label">Widgets</label>
+      <div class="settings-list" id="dashWidgetToggleList"></div>
+    </div>
+    <span class="field-hint">Drag ⋮⋮ on any panel to reorder it, or use ✕ to remove it.</span>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="modal-overlay" id="paletteModal" style="align-items: flex-start; padding-top: 12vh;">
+    <div class="modal-card palette-modal-card">
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Type a note name or command..." oninput="filterPalette()">
+      <div class="palette-list" id="paletteList"></div>
+      <div class="palette-hint">↑↓ to navigate · Enter to select · Esc to close</div>
+    </div>
+  </div>
+
+  <canvas id="timerCanvas" width="800" height="400" style="display:none;"></canvas>
+  <video id="timerVideo" autoplay muted style="display:none;"></video>
+
+  <script src="js/common.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasks — Workspace</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">🗂️ Workspace</a>
+      <div class="topnav-links">
+        <a href="index.html" class="topnav-link" data-nav="dashboard">🏠 <span class="label">Dashboard</span></a>
+        <a href="notes.html" class="topnav-link" data-nav="notes">🗒️ <span class="label">Notes</span></a>
+        <a href="tasks.html" class="topnav-link" data-nav="tasks">📋 <span class="label">Tasks</span></a>
+        <a href="preview.html" class="topnav-link" data-nav="preview">📄 <span class="label">Files</span></a>
+        <a href="settings.html" class="topnav-link" data-nav="settings">⚙️ <span class="label">Settings</span></a>
+      </div>
+      <div class="topnav-actions">
+        <button class="topnav-timer-badge" id="timerBadge"></button>
+        <button class="topnav-icon-btn" onclick="openCommandPalette()" title="Command palette (Ctrl/Cmd+P)">🔍</button>
+        <button class="topnav-icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tasks</div>
+        <div class="page-subtitle">Checkboxes from your notes, plus standalone tasks — as a list, a board, or a calendar.</div>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn-icon" onclick="toggleNewTaskModal(true)">➕ New Task</button>
+        <div class="tabs-bar">
+          <button class="tab-btn active" data-tab="list" onclick="setTasksTab('list')">📋 List</button>
+          <button class="tab-btn" data-tab="kanban" onclick="setTasksTab('kanban')">🗂 Kanban</button>
+          <button class="tab-btn" data-tab="calendar" onclick="setTasksTab('calendar')">📅 Calendar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="listView" class="card">
+      <div class="task-toolbar">
+        <input type="text" id="taskSearchInput" class="text-input flex-1" placeholder="🔍 Search tasks..." oninput="onListFilterChange()" style="min-width: 200px;">
+        <select id="statusFilterSelect" class="select-input" onchange="onListFilterChange()">
+          <option value="all">All statuses</option>
+          <option value="todo">To Do</option>
+          <option value="inprogress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <select id="tagFilterSelect" class="select-input" onchange="onListFilterChange()">
+          <option value="all">All tags</option>
+        </select>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="task-list-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;"></th>
+              <th onclick="sortListBy('text')">Task</th>
+              <th onclick="sortListBy('priority')">Priority</th>
+              <th onclick="sortListBy('due')">Schedule</th>
+              <th>Tags</th>
+              <th onclick="sortListBy('note')">Note</th>
+              <th style="width: 36px;"></th>
+            </tr>
+          </thead>
+          <tbody id="taskListBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="taskListEmpty" style="display: none;"><span class="empty-icon">✅</span>No tasks match these filters.</div>
+    </div>
+
+    <!-- KANBAN VIEW -->
+    <div id="kanbanView" class="card" style="display: none;">
+      <div class="kanban-board">
+        <div class="kanban-column">
+          <h3>To Do <span class="kanban-count" id="kanban-count-todo">0</span></h3>
+          <div class="kanban-list" id="kanban-todo" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onColumnDrop(event,'todo')"></div>
+        </div>
+        <div class="kanban-column">
+          <h3>In Progress <span class="kanban-count" id="kanban-count-inprogress">0</span></h3>
+          <div class="kanban-list" id="kanban-inprogress" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onColumnDrop(event,'inprogress')"></div>
+        </div>
+        <div class="kanban-column">
+          <h3>Done <span class="kanban-count" id="kanban-count-done">0</span></h3>
+          <div class="kanban-list" id="kanban-done" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onColumnDrop(event,'done')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDAR VIEW -->
+    <div id="calendarView" class="card" style="display: none;">
+      <span class="field-hint">Only tasks with a scheduled date or date range show here — unplanned tasks live in List and Kanban.</span>
+      <div class="calendar-controls">
+        <button class="btn-icon" onclick="calendarNav(-1)">◀</button>
+        <span id="calendarLabel" class="calendar-label"></span>
+        <button class="btn-icon" onclick="calendarNav(1)">▶</button>
+        <button class="btn-icon" onclick="calendarToday()">Today</button>
+        <span style="flex: 1;"></span>
+        <button class="btn-icon calendar-mode-btn calendar-mode-active" data-mode="month" onclick="setCalendarMode('month')">Month</button>
+        <button class="btn-icon calendar-mode-btn" data-mode="week" onclick="setCalendarMode('week')">Week</button>
+      </div>
+      <div id="calendarContainer"></div>
+    </div>
+  </div>
+
+  <!-- New Task Modal -->
+  <div class="modal-overlay" id="newTaskModal">
+    <div class="modal-card">
+      <h2>
+        <span>➕ New Task</span>
+        <button class="btn-icon btn-icon-close" onclick="toggleNewTaskModal(false)">✕</button>
+      </h2>
+
+      <div class="settings-section">
+        <label class="section-label">Task</label>
+        <input type="text" id="newTaskText" class="text-input" placeholder="What needs doing?" onkeydown="if(event.key==='Enter') submitNewTask()">
+      </div>
+
+      <div class="settings-section">
+        <label class="section-label">Priority</label>
+        <select id="newTaskPriority" class="select-input">
+          <option value="">None</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+
+      <div class="settings-section">
+        <label class="section-label">Scheduling</label>
+        <div class="schedule-radio-group">
+          <label><input type="radio" name="newTaskSchedule" value="unplanned" checked onchange="onNewTaskScheduleChange()"> Unplanned</label>
+          <label><input type="radio" name="newTaskSchedule" value="single" onchange="onNewTaskScheduleChange()"> Single day</label>
+          <label><input type="radio" name="newTaskSchedule" value="range" onchange="onNewTaskScheduleChange()"> Date range</label>
+        </div>
+        <div class="flex-row" id="newTaskDateRow" style="display: none;">
+          <input type="date" id="newTaskDue" class="text-input">
+          <div class="flex-row" id="newTaskDueEndWrap" style="display: none;">
+            <span class="text-muted">to</span>
+            <input type="date" id="newTaskDueEnd" class="text-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="section-label">Recurring (optional)</label>
+        <input type="text" id="newTaskRecurring" class="text-input" placeholder="e.g. every week">
+      </div>
+
+      <div class="settings-section">
+        <label class="section-label">Tags (comma separated)</label>
+        <input type="text" id="newTaskTags" class="text-input" placeholder="e.g. work, urgent">
+      </div>
+
+      <button class="btn" onclick="submitNewTask()">Create Task</button>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="modal-overlay" id="paletteModal" style="align-items: flex-start; padding-top: 12vh;">
+    <div class="modal-card palette-modal-card">
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Type a note name or command..." oninput="filterPalette()">
+      <div class="palette-list" id="paletteList"></div>
+      <div class="palette-hint">↑↓ to navigate · Enter to select · Esc to close</div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/tasks.js"></script>
+</body>
+</html>
